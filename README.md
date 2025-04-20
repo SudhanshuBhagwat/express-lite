@@ -26,17 +26,17 @@ Will be adding examples for each of the items mentioned below as and when those 
 ## Basic Functionalities
 
 - [ ] Should support all the basic HTTP methods
-  - [ ] GET
+  - [x] GET
   - [ ] POST
   - [ ] PUT
   - [ ] DELETE
-- [ ] Should be able to set Status Codes for each request
+- [x] Should be able to set Status Codes for each request
 - [ ] Should be able to send the following type of responses:
-  - [ ] JSON
-  - [ ] Text
+  - [x] JSON
+  - [x] Text
   - [ ] HTML
 - [ ] Should be able to manipulate the following:
-  - [ ] Headers
+  - [x] Headers
   - [ ] Cookies
 - [ ] Routes should be typesafe
   - [ ] If the route has any query params then the request object should have a typed query object
@@ -55,3 +55,5 @@ Also, in addition to the above get the following things to work (Cherry on top ð
 - [x] Prettier
 - [ ] Eslint
 - [x] Jest
+
+And most importantly, HAVE FUNðŸ•º in the process

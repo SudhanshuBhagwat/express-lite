@@ -1,12 +1,10 @@
-import { createServer, IncomingMessage, Server, ServerResponse } from "http";
+import { createServer, IncomingMessage, Server } from "http";
+import { STATUS_CODE } from "../utils/status";
+import Response from "../internals/response";
 
 interface Options {
   port?: number;
 }
-
-export const STATUS_CODE = {
-  SUCCESS: 200,
-} as const;
 
 export default class App {
   #listenPort: number;
@@ -21,7 +19,7 @@ export default class App {
       if (req.url && this.#handlers.has(req.url)) {
         const callbackFn: CallbackFn = this.#handlers.get(req.url)!;
         if (callbackFn) {
-          callbackFn(req, response(res));
+          callbackFn(req, new Response(res));
         }
       }
     });
@@ -45,34 +43,4 @@ export default class App {
 
 type CallbackFn = (request: IncomingMessage, response: Response) => void;
 
-export interface Response {
-  headers: (headerValues: Object) => Response;
-  status: (statusCode: number) => Response;
-  send: (value: String) => void;
-  json: (value: Object) => void;
-}
-
-function response(res: ServerResponse<IncomingMessage>): Response {
-  const headers = new Map<String, String>();
-  let status: number = STATUS_CODE.SUCCESS;
-  return {
-    headers: function (headerValues: Object) {
-      Object.entries(headerValues).forEach(([key, value]) => {
-        headers.set(key, value);
-      });
-      return this;
-    },
-    status: (statusCode: number) => {
-      status = statusCode;
-      return this;
-    },
-    send: function (value: String) {
-      res.writeHead(status, { "Content-Type": "plain/text" });
-      res.end(value);
-    },
-    json: function (value: Object) {
-      res.writeHead(status, { "Content-Type": "application/json" });
-      res.end(JSON.stringify(value));
-    },
-  };
-}
+export type StatusCode = (typeof STATUS_CODE)[keyof typeof STATUS_CODE];

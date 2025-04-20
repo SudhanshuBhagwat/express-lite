@@ -4,7 +4,7 @@
   "description": "A simple yet functional full types node.js server",
   "main": "./dist/index.js",
   "scripts": {
-    "watch": "tsx watch src/index.ts",
+    "watch": "tsx watch src/server.ts",
     "build": "bunchee",
     "prettify": "npx prettier . --write",
     "test": "jest"
