@@ -2,9 +2,17 @@
   "name": "express-lite",
   "version": "1.0.0",
   "description": "A simple yet functional full types node.js server",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "scripts": {
-    "watch": "tsx watch index.ts"
+    "watch": "tsx watch index.ts",
+    "build": "bunchee"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
   },
   "keywords": [],
   "author": "Sudhanshu Bhagwat",
@@ -14,6 +22,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.14.1",
+    "bunchee": "^6.5.1",
     "tsx": "^4.19.3"
   }
 }

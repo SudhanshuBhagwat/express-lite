@@ -47,3 +47,4 @@ Will be adding examples for each of the items mentioned below as and when those 
   - [ ] For a specific Route Group
 - [ ] Serving static assets
 - [ ] Support Async Functions
+- [ ] Setting up a simple bundler system

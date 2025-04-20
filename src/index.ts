@@ -1,11 +1,3 @@
-import App from "./src/server";
+import App from "./server";
 
-const server = new App();
-
-server
-  .get("/hello", (request, response) => {
-    response.json({
-      message: "Hello World!",
-    });
-  })
-  .listen();
+export default App;
