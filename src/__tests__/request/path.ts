@@ -1,5 +1,5 @@
 import request from "supertest";
-import App from "../server/index";
+import App from "../../server/index";
 
 describe("Should pass tests related to the Request module", () => {
   const server = createApp("/hello");
@@ -24,7 +24,6 @@ describe("Should pass tests related to the Request module", () => {
 
 function createApp(setting) {
   return new App().get(setting, (request, response) => {
-    console.info("Pathname: ", request.pathname);
     response.send(request.pathname);
   });
 }
