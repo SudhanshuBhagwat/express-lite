@@ -48,3 +48,10 @@ Will be adding examples for each of the items mentioned below as and when those 
 - [ ] Serving static assets
 - [ ] Support Async Functions
 - [ ] Setting up a simple bundler system
+
+Also, in addition to the above get the following things to work (Cherry on top 🤌):
+
+- [x] A simple module bundler
+- [x] Prettier
+- [ ] Eslint
+- [x] Jest

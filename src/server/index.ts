@@ -16,6 +16,15 @@ export default class App {
   constructor(opts: Options = {}) {
     this.#listenPort = opts?.port || 8080;
     this.#handlers = new Map<String, CallbackFn>();
+
+    this.#server = createServer((req, res) => {
+      if (req.url && this.#handlers.has(req.url)) {
+        const callbackFn: CallbackFn = this.#handlers.get(req.url)!;
+        if (callbackFn) {
+          callbackFn(req, response(res));
+        }
+      }
+    });
   }
 
   get(path: string, callbackFn: CallbackFn) {
@@ -23,16 +32,12 @@ export default class App {
     return this;
   }
 
+  address() {
+    return this.#server.address();
+  }
+
   listen() {
-    this.#server = createServer((req, res) => {
-      if (req.url && this.#handlers.has(req.url)) {
-        const callbackFn: CallbackFn = this.#handlers.get(req.url)!;
-        if (callbackFn) {
-          console.log(req.method);
-          callbackFn(req, response(res));
-        }
-      }
-    }).listen(this.#listenPort, () => {
+    return this.#server.listen(this.#listenPort, () => {
       console.log(`Listening on PORT: ${this.#listenPort}`);
     });
   }
@@ -62,7 +67,7 @@ function response(res: ServerResponse<IncomingMessage>): Response {
       return this;
     },
     send: function (value: String) {
-      res.writeHead(status, { "Content-Type": "text/html" });
+      res.writeHead(status, { "Content-Type": "plain/text" });
       res.end(value);
     },
     json: function (value: Object) {
