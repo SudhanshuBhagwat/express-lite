@@ -1,0 +1,19 @@
+{
+  "name": "express-lite",
+  "version": "1.0.0",
+  "description": "A simple yet functional full types node.js server",
+  "main": "index.js",
+  "scripts": {
+    "watch": "tsx watch index.ts"
+  },
+  "keywords": [],
+  "author": "Sudhanshu Bhagwat",
+  "license": "ISC",
+  "dependencies": {
+    "typescript": "^5.8.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.1",
+    "tsx": "^4.19.3"
+  }
+}
