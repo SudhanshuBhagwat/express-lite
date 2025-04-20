@@ -13,7 +13,6 @@ describe("Should pass tests related to the Request module", () => {
 
 function createApp(setting) {
   return new App().get(setting, (request, response) => {
-    console.info("Pathname: ", request.pathname);
     response.send(request.pathname);
   });
 }
