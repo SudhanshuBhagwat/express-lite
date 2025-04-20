@@ -1,32 +1,59 @@
-import { createServer, IncomingMessage, Server } from "http";
-import { STATUS_CODE } from "../utils/status";
+import { createServer, Server } from "http";
+import Request from "../internals/request";
 import Response from "../internals/response";
+import { StringDecoder } from "string_decoder";
+import { parse } from "url";
 
 interface Options {
   port?: number;
 }
 
+type CallbackFn = (request: Request, response: Response) => void;
+
 export default class App {
   #listenPort: number;
   #server: Server;
   #handlers: Map<String, CallbackFn>;
+  #payload: string;
 
   constructor(opts: Options = {}) {
     this.#listenPort = opts?.port || 8080;
     this.#handlers = new Map<String, CallbackFn>();
 
     this.#server = createServer((req, res) => {
-      if (req.url && this.#handlers.has(req.url)) {
-        const callbackFn: CallbackFn = this.#handlers.get(req.url)!;
+      const decoder = new StringDecoder("utf-8");
+      let buffer: string;
+      req.on("data", function (data) {
+        buffer += decoder.write(data);
+      });
+
+      req.on("end", function () {
+        buffer += decoder.end();
+      });
+
+      const request = new Request(req, this.#payload);
+      if (request && this.#handlers.has(request.pathname)) {
+        const callbackFn: CallbackFn = this.#handlers.get(request.pathname)!;
         if (callbackFn) {
-          callbackFn(req, new Response(res));
+          callbackFn(request, new Response(res));
         }
+      } else if (!this.#handlers.has(request.pathname)) {
+        res.statusCode = 404;
+        res.end();
       }
     });
   }
 
+  setPayload(buffer: string) {
+    this.#payload = buffer;
+  }
+
   get(path: string, callbackFn: CallbackFn) {
-    this.#handlers.set(path, callbackFn);
+    const parsedPath = parse(path, true);
+    this.#handlers.set(
+      parsedPath.pathname.replace(/^\/+|\/+$/g, ""),
+      callbackFn,
+    );
     return this;
   }
 
@@ -39,8 +66,8 @@ export default class App {
       console.log(`Listening on PORT: ${this.#listenPort}`);
     });
   }
+
+  close(callbackFn) {
+    this.#server.close(callbackFn);
+  }
 }
-
-type CallbackFn = (request: IncomingMessage, response: Response) => void;
-
-export type StatusCode = (typeof STATUS_CODE)[keyof typeof STATUS_CODE];

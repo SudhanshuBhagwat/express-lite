@@ -71,3 +71,5 @@ export const STATUS_CODE = {
   NOT_EXTENDED: 510,
   NETWORK_AUTHENTICATION_REQUIRED: 511,
 } as const;
+
+export type StatusCode = (typeof STATUS_CODE)[keyof typeof STATUS_CODE];

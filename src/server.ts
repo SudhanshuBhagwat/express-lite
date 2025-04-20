@@ -1,4 +1,4 @@
-import App from ".";
+import App from "./index";
 
 const server = new App();
 

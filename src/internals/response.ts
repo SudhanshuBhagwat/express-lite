@@ -1,6 +1,5 @@
-import { IncomingMessage, OutgoingHttpHeaders, ServerResponse } from "http";
-import { StatusCode } from "../server";
-import { STATUS_CODE } from "../utils/status";
+import { OutgoingHttpHeaders, ServerResponse } from "http";
+import { STATUS_CODE, StatusCode } from "../utils/status";
 
 type Header = OutgoingHttpHeaders | Record<string, string>;
 
@@ -17,6 +16,7 @@ export default class Response {
     this.#localHeaders = headerValues;
     return this;
   }
+
   status(statusCode: StatusCode) {
     this.#status = statusCode;
     return this;
