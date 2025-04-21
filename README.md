@@ -25,11 +25,12 @@ Will be adding examples for each of the items mentioned below as and when those 
 
 ## Basic Functionalities
 
-- [ ] Should support all the basic HTTP methods
+- [x] Should support all the basic HTTP methods
   - [x] GET
-  - [ ] POST
-  - [ ] PUT
-  - [ ] DELETE
+  - [x] POST
+  - [x] PUT
+  - [x] DELETE
+  - [x] PATCH
 - [x] Should be able to set Status Codes for each request
 - [ ] Should be able to send the following type of responses:
   - [x] JSON
@@ -47,7 +48,6 @@ Will be adding examples for each of the items mentioned below as and when those 
   - [ ] For a specific Route Group
 - [ ] Serving static assets
 - [ ] Support Async Functions
-- [ ] Setting up a simple bundler system
 
 Also, in addition to the above get the following things to work (Cherry on top 🤌):
 

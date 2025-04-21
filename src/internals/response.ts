@@ -22,10 +22,18 @@ export default class Response {
     return this;
   }
 
+  html(value: String) {
+    this.#response.writeHead(
+      this.#status,
+      getHeaders(this.#localHeaders, { "Content-Type": "text/html" }),
+    );
+    this.#response.end(value);
+  }
+
   send(value: String) {
     this.#response.writeHead(
       this.#status,
-      getHeaders(this.#localHeaders, { "Content-Type": "plain/text" }),
+      getHeaders(this.#localHeaders, { "Content-Type": "text/plain" }),
     );
     this.#response.end(value);
   }
