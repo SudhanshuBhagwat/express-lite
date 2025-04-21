@@ -20,6 +20,18 @@ export default class Request {
     return this.#request.headers;
   }
 
+  get contentType() {
+    return this.#request.headers["content-type"];
+  }
+
+  hasHeader(header: string) {
+    return this.#request.headers[header] !== undefined;
+  }
+
+  getHeader(header: string) {
+    return this.#request.headers[header];
+  }
+
   get pathname() {
     return this.#url.pathname.replace(/^\/+|\/+$/g, "");
   }

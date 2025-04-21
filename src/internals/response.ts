@@ -2,6 +2,14 @@ import { OutgoingHttpHeaders, ServerResponse } from "http";
 import { STATUS_CODE, StatusCode } from "../utils/status";
 
 type Header = OutgoingHttpHeaders | Record<string, string>;
+export type CookieOptions = {
+  maxAge?: number;
+  path?: string;
+  domain?: string;
+  secure?: boolean;
+  httpOnly?: boolean;
+  sameSite?: string;
+};
 
 export default class Response {
   #localHeaders: Header;
@@ -14,6 +22,33 @@ export default class Response {
 
   headers(headerValues: Header) {
     this.#localHeaders = headerValues;
+    return this;
+  }
+
+  addCookie(name: string, value: string, options: CookieOptions) {
+    let cookie = `${name}=${value}`;
+    if (options.maxAge) {
+      cookie += `; Max-Age=${options.maxAge}`;
+    }
+    if (options.path) {
+      cookie += `; Path=${options.path}`;
+    }
+    if (options.domain) {
+      cookie += `; Domain=${options.domain}`;
+    }
+    if (options.secure) {
+      cookie += `; Secure`;
+    }
+    if (options.httpOnly) {
+      cookie += `; HttpOnly`;
+    }
+    if (options.sameSite) {
+      cookie += `; SameSite=${options.sameSite}`;
+    }
+    this.#localHeaders["set-cookie"] = [
+      ...this.#localHeaders["set-cookie"],
+      cookie,
+    ];
     return this;
   }
 
