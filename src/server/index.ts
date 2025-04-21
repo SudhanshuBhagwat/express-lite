@@ -5,21 +5,17 @@ import { StringDecoder } from "string_decoder";
 import { parsePath } from "../utils/utils";
 import { STATUS_CODE } from "../utils/status";
 
-interface Options {
-  port?: number;
-}
+interface Options {}
 
 type CallbackFn = (request: Request, response: Response) => void;
 
 export default class App {
-  #listenPort: number;
   #server: Server;
   #handlers: Map<String, CallbackFn>;
   #payload: string;
   #supportedMethods: Map<String, Array<String>>;
 
   constructor(opts: Options = {}) {
-    this.#listenPort = opts?.port || 8080;
     this.#handlers = new Map<String, CallbackFn>();
     this.#supportedMethods = new Map<String, Array<String>>();
 
@@ -102,9 +98,9 @@ export default class App {
     return this.#server.address();
   }
 
-  listen() {
-    return this.#server.listen(this.#listenPort, () => {
-      console.log(`Listening on PORT: ${this.#listenPort}`);
+  listen(port: number) {
+    return this.#server.listen(port, () => {
+      console.log(`Listening on PORT: ${port}`);
     });
   }
 
