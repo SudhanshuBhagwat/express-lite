@@ -1,7 +1,7 @@
 import request from "supertest";
-import App from "../../server/index";
+import App from "../../src/server/index";
 
-describe("Should pass tests related to the Request module", () => {
+describe("Should pass tests related to the Request module - Path", () => {
   const server = createApp("/hello");
   const agent = request(server);
 

@@ -1,5 +1,5 @@
 import request from "supertest";
-import App from "../server/index";
+import App from "../src/server/index";
 
 const app = new App().get("/hello", (request, response) => {
   response.json({

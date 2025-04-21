@@ -31,4 +31,8 @@ export default class Request {
   get hostname() {
     return this.#url.hostname;
   }
+
+  get method() {
+    return this.#request.method;
+  }
 }
