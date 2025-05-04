@@ -57,7 +57,7 @@ export default class Response {
     return this;
   }
 
-  html(value: String) {
+  html(value: string) {
     this.#response.writeHead(
       this.#status,
       getHeaders(this.#localHeaders, { "Content-Type": "text/html" }),
@@ -65,7 +65,7 @@ export default class Response {
     this.#response.end(value);
   }
 
-  send(value: String) {
+  send(value: string) {
     this.#response.writeHead(
       this.#status,
       getHeaders(this.#localHeaders, { "Content-Type": "text/plain" }),

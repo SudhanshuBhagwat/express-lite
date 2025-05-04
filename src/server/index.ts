@@ -1,4 +1,4 @@
-import { createServer, Server } from "http";
+import { createServer, request, Server } from "http";
 import Request from "../internals/request";
 import Response from "../internals/response";
 import { StringDecoder } from "string_decoder";
@@ -7,17 +7,20 @@ import { STATUS_CODE } from "../utils/status";
 
 interface Options {}
 
-type CallbackFn = (request: Request, response: Response) => void;
+type CallbackFn<T extends string = string> = (
+  request: Request<T>,
+  response: Response,
+) => void;
 
 export default class App {
   #server: Server;
-  #handlers: Map<String, CallbackFn>;
+  #handlers: Map<string, CallbackFn>;
   #payload: string;
-  #supportedMethods: Map<String, Array<String>>;
+  #supportedMethods: Map<string, string[]>;
 
   constructor(opts: Options = {}) {
-    this.#handlers = new Map<String, CallbackFn>();
-    this.#supportedMethods = new Map<String, Array<String>>();
+    this.#handlers = new Map<string, CallbackFn>();
+    this.#supportedMethods = new Map<string, string[]>();
 
     this.#server = createServer((req, res) => {
       const decoder = new StringDecoder("utf-8");
@@ -31,30 +34,48 @@ export default class App {
       });
 
       const request = new Request(req, this.#payload);
-      if (request && this.#handlers.has(request.pathname)) {
-        const supportedMethods = this.#supportedMethods.get(request.pathname);
+      const handler = this.isPathValid(request.pathname);
+      if (request && handler) {
+        request.setHandler(handler);
+        const supportedMethods = this.#supportedMethods.get(handler);
         if (!supportedMethods?.includes(request.method)) {
           res.statusCode = STATUS_CODE.METHOD_NOT_ALLOWED;
           res.end();
           return;
         }
 
-        const callbackFn: CallbackFn = this.#handlers.get(request.pathname)!;
+        const callbackFn = this.#handlers.get(handler)!;
         if (callbackFn) {
-          callbackFn(request, new Response(res));
+          callbackFn(request as Request<typeof handler>, new Response(res));
         }
-      } else if (!this.#handlers.has(request.pathname)) {
+      } else {
         res.statusCode = STATUS_CODE.NOT_FOUND;
         res.end();
       }
     });
   }
 
+  isPathValid(path: string): string | undefined {
+    for (const key of this.#handlers.keys()) {
+      const handlerPath = key.split("/");
+      const pathParts = path.split("/");
+
+      if (handlerPath.length === pathParts.length) {
+        for (let i = 0; i < handlerPath.length; i++) {
+          if (handlerPath[i] === pathParts[i]) {
+            return key;
+          }
+        }
+      }
+    }
+    return undefined;
+  }
+
   setPayload(buffer: string) {
     this.#payload = buffer;
   }
 
-  get(path: string, callbackFn: CallbackFn) {
+  get<T extends string>(path: T, callbackFn: CallbackFn<T>) {
     const parsedPath = parsePath(path);
     this.#handlers.set(parsedPath, callbackFn);
     const supportedMethods = this.#supportedMethods.get(parsedPath) || [];
@@ -62,7 +83,7 @@ export default class App {
     return this;
   }
 
-  post(path: string, callbackFn: CallbackFn) {
+  post<T extends string>(path: T, callbackFn: CallbackFn<T>) {
     const parsedPath = parsePath(path);
     this.#handlers.set(parsedPath, callbackFn);
     const supportedMethods = this.#supportedMethods.get(parsedPath) || [];
@@ -70,7 +91,7 @@ export default class App {
     return this;
   }
 
-  put(path: string, callbackFn: CallbackFn) {
+  put<T extends string>(path: T, callbackFn: CallbackFn<T>) {
     const parsedPath = parsePath(path);
     this.#handlers.set(parsedPath, callbackFn);
     const supportedMethods = this.#supportedMethods.get(parsedPath) || [];
@@ -78,7 +99,7 @@ export default class App {
     return this;
   }
 
-  delete(path: string, callbackFn: CallbackFn) {
+  delete<T extends string>(path: T, callbackFn: CallbackFn<T>) {
     const parsedPath = parsePath(path);
     this.#handlers.set(parsedPath, callbackFn);
     const supportedMethods = this.#supportedMethods.get(parsedPath) || [];
@@ -86,7 +107,7 @@ export default class App {
     return this;
   }
 
-  patch(path: string, callbackFn: CallbackFn) {
+  patch<T extends string>(path: T, callbackFn: CallbackFn<T>) {
     const parsedPath = parsePath(path);
     this.#handlers.set(parsedPath, callbackFn);
     const supportedMethods = this.#supportedMethods.get(parsedPath) || [];

@@ -13,4 +13,14 @@ server
         message: "Hello World!",
       });
   })
-  .listen();
+  .get("/hello/:name", (request, response) => {
+    response.json({
+      message: `Hello from dynamic path ${request.params.name}!`,
+    });
+  })
+  .get("/hello/name", (request, response) => {
+    response.json({
+      message: `Hello world!`,
+    });
+  })
+  .listen(3000);
