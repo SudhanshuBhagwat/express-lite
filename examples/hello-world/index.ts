@@ -1,11 +1,16 @@
-import App, { loggerPlugin, staticPlugin } from "express-lite";
+import App, {
+  loggerPlugin,
+  type Request,
+  type Response,
+  staticPlugin,
+} from "express-lite";
 
 const server = new App();
 
 server
   .use(loggerPlugin())
   .use(staticPlugin({ path: "public" }))
-  .get("/hello", (request, response) => {
+  .get("/hello", (request: Request, response: Response) => {
     response
       .headers({
         foo: "bar",
