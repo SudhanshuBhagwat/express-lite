@@ -1,8 +1,10 @@
-import App from "./index";
+import App from "./server/index";
+import { staticPlugin } from "./plugins/static";
 
 const server = new App();
 
 server
+  .use(staticPlugin({ path: "public" }))
   .get("/hello", (request, response) => {
     response
       .headers({

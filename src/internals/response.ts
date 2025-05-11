@@ -60,7 +60,7 @@ export default class Response {
   html(value: string) {
     this.#response.writeHead(
       this.#status,
-      getHeaders(this.#localHeaders, { "Content-Type": "text/html" }),
+      getHeaders({ "Content-Type": "text/html" }, this.#localHeaders),
     );
     this.#response.end(value);
   }
@@ -68,7 +68,7 @@ export default class Response {
   send(value: string) {
     this.#response.writeHead(
       this.#status,
-      getHeaders(this.#localHeaders, { "Content-Type": "text/plain" }),
+      getHeaders({ "Content-Type": "text/plain" }, this.#localHeaders),
     );
     this.#response.end(value);
   }
@@ -76,9 +76,13 @@ export default class Response {
   json(value: Object) {
     this.#response.writeHead(
       this.#status,
-      getHeaders(this.#localHeaders, { "Content-Type": "application/json" }),
+      getHeaders({ "Content-Type": "application/json" }, this.#localHeaders),
     );
     this.#response.end(JSON.stringify(value));
+  }
+
+  end() {
+    this.#response.end();
   }
 }
 

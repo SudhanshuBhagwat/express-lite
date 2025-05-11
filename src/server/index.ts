@@ -1,9 +1,15 @@
-import { createServer, request, Server } from "http";
+import { createServer, Server } from "http";
 import Request from "../internals/request";
 import Response from "../internals/response";
 import { StringDecoder } from "string_decoder";
 import { parsePath } from "../utils/utils";
 import { STATUS_CODE } from "../utils/status";
+
+type MiddlewareFunction = (
+  req: Request,
+  res: Response,
+  next: () => void,
+) => void;
 
 interface Options {}
 
@@ -17,14 +23,16 @@ export default class App {
   #handlers: Map<string, CallbackFn>;
   #payload: string;
   #supportedMethods: Map<string, string[]>;
+  #middleware: MiddlewareFunction[];
 
   constructor(opts: Options = {}) {
     this.#handlers = new Map<string, CallbackFn>();
     this.#supportedMethods = new Map<string, string[]>();
+    this.#middleware = [];
 
     this.#server = createServer((req, res) => {
       const decoder = new StringDecoder("utf-8");
-      let buffer: string;
+      let buffer: string = "";
       req.on("data", function (data) {
         buffer += decoder.write(data);
       });
@@ -34,24 +42,36 @@ export default class App {
       });
 
       const request = new Request(req, this.#payload);
-      const handler = this.isPathValid(request.pathname);
-      if (request && handler) {
-        request.setHandler(handler);
-        const supportedMethods = this.#supportedMethods.get(handler);
-        if (!supportedMethods?.includes(request.method)) {
-          res.statusCode = STATUS_CODE.METHOD_NOT_ALLOWED;
-          res.end();
-          return;
-        }
+      const response = new Response(res);
 
-        const callbackFn = this.#handlers.get(handler)!;
-        if (callbackFn) {
-          callbackFn(request as Request<typeof handler>, new Response(res));
+      let middlewareIndex = 0;
+      const next = () => {
+        if (middlewareIndex < this.#middleware.length) {
+          const middleware = this.#middleware[middlewareIndex++];
+          middleware(request, response, next);
+        } else {
+          const handler = this.isPathValid(request.pathname);
+          if (request && handler) {
+            request.setHandler(handler);
+            const supportedMethods = this.#supportedMethods.get(handler);
+            if (!supportedMethods?.includes(request.method)) {
+              res.statusCode = STATUS_CODE.METHOD_NOT_ALLOWED;
+              res.end();
+              return;
+            }
+
+            const callbackFn = this.#handlers.get(handler)!;
+            if (callbackFn) {
+              callbackFn(request as Request<typeof handler>, response);
+            }
+          } else {
+            res.statusCode = STATUS_CODE.NOT_FOUND;
+            res.end();
+          }
         }
-      } else {
-        res.statusCode = STATUS_CODE.NOT_FOUND;
-        res.end();
-      }
+      };
+
+      next();
     });
   }
 
@@ -73,6 +93,11 @@ export default class App {
 
   setPayload(buffer: string) {
     this.#payload = buffer;
+  }
+
+  use(middleware: MiddlewareFunction) {
+    this.#middleware.push(middleware);
+    return this;
   }
 
   get<T extends string>(path: T, callbackFn: CallbackFn<T>) {
