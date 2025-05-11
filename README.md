@@ -46,7 +46,7 @@ Will be adding examples for each of the items mentioned below as and when those 
 - [ ] Middlewares
   - [ ] For individual function
   - [ ] For a specific Route Group
-- [ ] Serving static assets
+- [x] Serving static assets
 - [ ] Support Async Functions
 
 Also, in addition to the above get the following things to work (Cherry on top 🤌):

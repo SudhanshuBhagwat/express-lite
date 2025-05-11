@@ -1,9 +1,11 @@
 import App from "./server/index";
 import { staticPlugin } from "./plugins/static";
+import { loggerPlugin } from "./plugins/logger";
 
 const server = new App();
 
 server
+  .use(loggerPlugin())
   .use(staticPlugin({ path: "public" }))
   .get("/hello", (request, response) => {
     response
