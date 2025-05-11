@@ -41,11 +41,11 @@ Will be adding examples for each of the items mentioned below as and when those 
   - [ ] Cookies
 - [x] Routes should be typesafe
   - [x] If the path contains dynamic segments, then those should be typed in the requests URL object (/user/:id)
-- [ ] Route Groups
+- [x] Route Groups
 - [ ] Middlewares
   - [x] For entire App
   - [ ] For individual function
-  - [ ] For a specific Route Group
+  - [x] For a specific Route Group
 - [x] Serving static assets
 - [ ] Support Async Functions
 

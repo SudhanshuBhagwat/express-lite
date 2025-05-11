@@ -2,14 +2,20 @@ import App from "./server/index";
 import { staticPlugin } from "./plugins/static";
 import { loggerPlugin } from "./plugins/logger";
 import { Router } from "./server/index";
+
 const server = new App();
 const authRouter = new Router();
 
-authRouter.get("/hello", (request, response) => {
-  response.json({
-    message: "Hello from authenticated router!",
+authRouter
+  .use((request, response, next) => {
+    console.log("Authenticating...");
+    next();
+  })
+  .get("/hello", (request, response) => {
+    response.json({
+      message: "Hello from authenticated router!",
+    });
   });
-});
 
 server
   .use(loggerPlugin())

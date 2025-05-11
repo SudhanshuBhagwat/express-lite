@@ -48,22 +48,13 @@ export class Router {
     const routerPrefix = parsePath(request.pathname).split("/")[0];
     const router = this.#routers.get(routerPrefix);
     if (router) {
-      router.run(request, response, routerPrefix, this.#middleware);
+      router.run(request, response, routerPrefix);
     } else {
       this.run(request, response);
     }
   }
 
-  run(
-    request: Request,
-    response: Response,
-    routerPrefix?: string,
-    middlewares?: MiddlewareFunction[],
-  ) {
-    if (middlewares) {
-      this.#middleware = [...this.#middleware, ...middlewares];
-    }
-
+  run(request: Request, response: Response, routerPrefix?: string) {
     let middlewareIndex = 0;
     const next = () => {
       if (middlewareIndex < this.#middleware.length) {
@@ -110,6 +101,7 @@ export class Router {
 
   use(pathOrMiddleware: string | MiddlewareFunction, router?: Router) {
     if (typeof pathOrMiddleware === "string") {
+      router.#middleware = [...router.#middleware, ...this.#middleware];
       this.#routers.set(parsePath(pathOrMiddleware), router);
     } else {
       this.#middleware.push(pathOrMiddleware);
