@@ -21,7 +21,6 @@ type CallbackFn<T extends string = string> = (
 export default class App {
   #server: Server;
   #handlers: Map<string, CallbackFn>;
-  #payload: string;
   #supportedMethods: Map<string, string[]>;
   #middleware: MiddlewareFunction[];
 
@@ -41,7 +40,7 @@ export default class App {
         buffer += decoder.end();
       });
 
-      const request = new Request(req, this.#payload);
+      const request = new Request(req, buffer);
       const response = new Response(res);
 
       let middlewareIndex = 0;
@@ -50,7 +49,7 @@ export default class App {
           const middleware = this.#middleware[middlewareIndex++];
           middleware(request, response, next);
         } else {
-          const handler = this.isPathValid(request.pathname);
+          const handler = this.#isPathValid(request.pathname);
           if (request && handler) {
             request.setHandler(handler);
             const supportedMethods = this.#supportedMethods.get(handler);
@@ -75,7 +74,7 @@ export default class App {
     });
   }
 
-  isPathValid(path: string): string | undefined {
+  #isPathValid(path: string): string | undefined {
     for (const key of this.#handlers.keys()) {
       const handlerPath = key.split("/");
       const pathParts = path.split("/");
@@ -89,10 +88,6 @@ export default class App {
       }
     }
     return undefined;
-  }
-
-  setPayload(buffer: string) {
-    this.#payload = buffer;
   }
 
   use(middleware: MiddlewareFunction) {

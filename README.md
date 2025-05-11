@@ -39,11 +39,11 @@ Will be adding examples for each of the items mentioned below as and when those 
 - [ ] Should be able to manipulate the following:
   - [x] Headers
   - [ ] Cookies
-- [ ] Routes should be typesafe
-  - [ ] If the route has any query params then the request object should have a typed query object
+- [x] Routes should be typesafe
   - [x] If the path contains dynamic segments, then those should be typed in the requests URL object (/user/:id)
 - [ ] Route Groups
 - [ ] Middlewares
+  - [x] For entire App
   - [ ] For individual function
   - [ ] For a specific Route Group
 - [x] Serving static assets
