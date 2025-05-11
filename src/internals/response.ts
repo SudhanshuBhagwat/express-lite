@@ -54,6 +54,7 @@ export default class Response {
 
   status(statusCode: StatusCode) {
     this.#status = statusCode;
+    this.#response.statusCode = statusCode;
     return this;
   }
 

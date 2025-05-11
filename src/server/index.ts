@@ -1,4 +1,4 @@
-import { createServer, Server } from "http";
+import { createServer, IncomingMessage, Server } from "http";
 import Request from "../internals/request";
 import Response from "../internals/response";
 import { StringDecoder } from "string_decoder";
@@ -18,63 +18,81 @@ type CallbackFn<T extends string = string> = (
   response: Response,
 ) => void;
 
-export default class App {
-  #server: Server;
+export class Router {
+  #routers: Map<string, Router>;
   #handlers: Map<string, CallbackFn>;
   #supportedMethods: Map<string, string[]>;
   #middleware: MiddlewareFunction[];
 
-  constructor(opts: Options = {}) {
+  constructor() {
+    this.#routers = new Map<string, Router>();
     this.#handlers = new Map<string, CallbackFn>();
     this.#supportedMethods = new Map<string, string[]>();
     this.#middleware = [];
-
-    this.#server = createServer((req, res) => {
-      const decoder = new StringDecoder("utf-8");
-      let buffer: string = "";
-      req.on("data", function (data) {
-        buffer += decoder.write(data);
-      });
-
-      req.on("end", function () {
-        buffer += decoder.end();
-      });
-
-      const request = new Request(req, buffer);
-      const response = new Response(res);
-
-      let middlewareIndex = 0;
-      const next = () => {
-        if (middlewareIndex < this.#middleware.length) {
-          const middleware = this.#middleware[middlewareIndex++];
-          middleware(request, response, next);
-        } else {
-          const handler = this.#isPathValid(request.pathname);
-          if (request && handler) {
-            request.setHandler(handler);
-            const supportedMethods = this.#supportedMethods.get(handler);
-            if (!supportedMethods?.includes(request.method)) {
-              res.statusCode = STATUS_CODE.METHOD_NOT_ALLOWED;
-              res.end();
-              return;
-            }
-
-            const callbackFn = this.#handlers.get(handler)!;
-            if (callbackFn) {
-              callbackFn(request as Request<typeof handler>, response);
-            }
-          } else {
-            res.statusCode = STATUS_CODE.NOT_FOUND;
-            res.end();
-          }
-        }
-      };
-
-      next();
-    });
   }
 
-  #isPathValid(path: string): string | undefined {
+  setupRouter(req: IncomingMessage, res) {
+    const decoder = new StringDecoder("utf-8");
+    let buffer: string = "";
+    req.on("data", function (data) {
+      buffer += decoder.write(data);
+    });
+
+    req.on("end", function () {
+      buffer += decoder.end();
+    });
+
+    const request = new Request(req, buffer);
+    const response = new Response(res);
+
+    const routerPrefix = parsePath(request.pathname).split("/")[0];
+    const router = this.#routers.get(routerPrefix);
+    if (router) {
+      router.run(request, response, routerPrefix, this.#middleware);
+    } else {
+      this.run(request, response);
+    }
+  }
+
+  run(
+    request: Request,
+    response: Response,
+    routerPrefix?: string,
+    middlewares?: MiddlewareFunction[],
+  ) {
+    if (middlewares) {
+      this.#middleware = [...this.#middleware, ...middlewares];
+    }
+
+    let middlewareIndex = 0;
+    const next = () => {
+      if (middlewareIndex < this.#middleware.length) {
+        const middleware = this.#middleware[middlewareIndex++];
+        middleware(request, response, next);
+      } else {
+        const route = routerPrefix
+          ? parsePath(request.pathname.replace(routerPrefix, ""))
+          : request.pathname;
+        const handler = this.isPathValid(route);
+        if (request && handler) {
+          request.setHandler(handler);
+          const supportedMethods = this.#supportedMethods.get(handler);
+          if (!supportedMethods?.includes(request.method)) {
+            return response.status(STATUS_CODE.METHOD_NOT_ALLOWED).end();
+          }
+          const callbackFn = this.#handlers.get(handler)!;
+          if (callbackFn) {
+            callbackFn(request as Request<typeof handler>, response);
+          }
+        } else {
+          return response.status(STATUS_CODE.NOT_FOUND).end();
+        }
+      }
+    };
+    next();
+  }
+
+  isPathValid(path: string): string | undefined {
     for (const key of this.#handlers.keys()) {
       const handlerPath = key.split("/");
       const pathParts = path.split("/");
@@ -90,8 +108,13 @@ export default class App {
     return undefined;
   }
 
-  use(middleware: MiddlewareFunction) {
-    this.#middleware.push(middleware);
+  use(pathOrMiddleware: string | MiddlewareFunction, router?: Router) {
+    if (typeof pathOrMiddleware === "string") {
+      this.#routers.set(parsePath(pathOrMiddleware), router);
+    } else {
+      this.#middleware.push(pathOrMiddleware);
+    }
+
     return this;
   }
 
@@ -133,6 +156,17 @@ export default class App {
     const supportedMethods = this.#supportedMethods.get(parsedPath) || [];
     this.#supportedMethods.set(parsedPath, [...supportedMethods, "PATCH"]);
     return this;
+  }
+}
+
+export default class App extends Router {
+  #server: Server;
+
+  constructor(opts: Options = {}) {
+    super();
+    this.#server = createServer((req, res) => {
+      this.setupRouter(req, res);
+    });
   }
 
   address() {
